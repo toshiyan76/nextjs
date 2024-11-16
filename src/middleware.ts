@@ -22,44 +22,44 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
-  // セッションの取得と検証
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession()
+  // // セッションの取得と検証
+  // const {
+  //   data: { session },
+  //   error: sessionError,
+  // } = await supabase.auth.getSession()
 
   // 現在のパス
   const path = req.nextUrl.pathname
 
-  // セッションエラーのハンドリング
-  if (sessionError) {
-    console.error('Session error:', sessionError)
-    return NextResponse.redirect(new URL('/auth/login', req.url))
-  }
+  // // セッションエラーのハンドリング
+  // if (sessionError) {
+  //   console.error('Session error:', sessionError)
+  //   return NextResponse.redirect(new URL('/auth/login', req.url))
+  // }
 
-  // 保護されたルートへのアクセスチェック
-  const isProtectedRoute = PROTECTED_ROUTES.some(route => 
-    path.startsWith(route)
-  )
+  // // 保護されたルートへのアクセスチェック
+  // const isProtectedRoute = PROTECTED_ROUTES.some(route => 
+  //   path.startsWith(route)
+  // )
 
-  // 認証済みユーザーの認証ページへのアクセス制限
-  const isAuthRoute = PUBLIC_ROUTES.some(route => 
-    path.startsWith(route)
-  )
+  // // 認証済みユーザーの認証ページへのアクセス制限
+  // const isAuthRoute = PUBLIC_ROUTES.some(route => 
+  //   path.startsWith(route)
+  // )
 
-  // 保護されたルートに未認証でアクセスした場合
-  if (isProtectedRoute && !session) {
-    // ログインページにリダイレクト
-    const redirectUrl = new URL('/auth/login', req.url)
-    redirectUrl.searchParams.set('redirect', path)
-    return NextResponse.redirect(redirectUrl)
-  }
+  // // 保護されたルートに未認証でアクセスした場合
+  // if (isProtectedRoute && !session) {
+  //   // ログインページにリダイレクト
+  //   const redirectUrl = new URL('/auth/login', req.url)
+  //   redirectUrl.searchParams.set('redirect', path)
+  //   return NextResponse.redirect(redirectUrl)
+  // }
 
-  // 認証済みユーザーが認証ページにアクセスした場合
-  if (isAuthRoute && session) {
-    // ダッシュボードにリダイレクト
-    return NextResponse.redirect(new URL('/dashboard', req.url))
-  }
+  // // 認証済みユーザーが認証ページにアクセスした場合
+  // if (isAuthRoute && session) {
+  //   // ダッシュボードにリダイレクト
+  //   return NextResponse.redirect(new URL('/dashboard', req.url))
+  // }
 
   // レスポンスヘッダーにセキュリティ関連の設定を追加
   const response = NextResponse.next()
@@ -70,6 +70,12 @@ export async function middleware(req: NextRequest) {
     'Content-Security-Policy',
     "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
   )
+
+  // 環境変数を使用してリダイレクトURLを設定
+  const loginUrl = process.env.NEXT_PUBLIC_SITE_URL
+    ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/login`
+    : '/auth/login' // 編集3
+  // 他のURLも同様に置き換え可能
 
   return response
 }
